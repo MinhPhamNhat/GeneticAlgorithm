@@ -1,0 +1,263 @@
+{% block head %}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script
+    src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<style>
+body{
+    padding:100px;
+    font-family: "Times New Roman", Times, serif;
+}
+#talbe td, #talbe th{
+    border: 2px solid ;
+    padding: 10px;
+}
+#talbe th{
+    background-color: #90E2F0;
+}
+#talbe td{
+    background-color:#CEF2F9;
+}
+#deleteContainer{
+    padding:0px;
+    border: none;
+}
+#deleteContainer button{
+    cursor: pointer;
+    font-weight: bold;
+    background-color: #D77A6F;
+    width: 75px;
+    height: 40px;
+    border: none;
+}
+#input td{
+    padding: 10px;
+}
+#checkSub{
+    height: 100px;
+    overflow: auto;
+}
+#addBtn{
+    cursor: pointer;
+    font-weight: bold;
+    padding: 10px;
+    border: none;
+    font-size: 22px;
+}
+a {
+    padding: 10px 15px 10px 15px ;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 22px;
+    height: 100%;
+    background-color: #CAF1F7;
+    font-weight: bold;
+    text-align: center;
+}
+</style>
+<script>
+    $(document).ready(function(){
+        $("#addBtn").click(function(){
+            $(this).attr("display","block");
+        })
+        $("#row").hover(function(){
+            console.log(1)
+        })
+    })
+    function deleteItem(item, ID){
+        console.log(item)
+            let daTa = {name: item.value, id: ID}
+            if (confirm('Bạn muốn xoá cái đó không ?')) {
+                $.ajax({
+                    type: "POST",
+                    url: "/deleteData",
+                    data: JSON.stringify(daTa),
+                    dataType: "json",
+                    contentType:"application/json; charset=UTF-8",
+                })
+                
+                location.reload();
+            }
+    }
+
+    function changeRowColor(item){
+        for (var i = 0; i < item.children.length; i++){
+            if ($(item.children[i]).attr("id") != "deleteContainer")
+            item.children[i].style.backgroundColor = "#9EE5F2"
+        }
+    }
+
+    function changeBackRowColor(item){
+        for (var i = 0; i < item.children.length; i++){
+            if ($(item.children[i]).attr("id") != "deleteContainer")
+            item.children[i].style.backgroundColor = "#CEF2F9"
+        }
+    }
+    </script>
+{% endblock %}
+
+{% block body %}
+<div class="header">
+    <a href="/getGeneral">Quay lại</a>
+    <a id="addBtn" data-toggle="modal" data-target="#myModal">Thêm dữ liệu</a>
+    <a href="/data?route=teacher">Giảng viên</a>
+    <a href="/data?route=subject">Môn học</a>
+    <a href="/data?route=room">Phòng</a>
+</div>
+<div class="container">
+    {% if id == 1 %}
+    <h1 style="text-align: center;"><b>Giảng viên</b></h1>
+    <table id="talbe">
+        <tr>
+            <th>Giáo viên</th>
+            <th>Môn học</th>
+            <th>Số ca tối thiểu</th>
+            <th>Số ca tối đa</th>
+        </tr>
+        {% for name,period,subs in teachers %}
+        <tr onmouseover="changeRowColor(this)"
+            onmouseout="changeBackRowColor(this)">
+            <td>{{name}}</td>
+            <td>{% for sub in subs %} {{sub}}, {% endfor %}</td>
+            <td>{{period[0]}}</td>
+            <td>{{period[1]}}</td>
+            <td style="border:none; background:none" id="deleteContainer">
+                <button onclick="deleteItem(this, 1)" value="{{name}}">Xoá</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+
+    {% elif id == 2 %}
+    <h1 style="text-align: center;"><b>Môn học</b></h1>
+    <table id="talbe">
+        <tr>
+            {% for i in range(3)%}
+            <th>Tên môn học</th>
+            <th>Số nhóm</th>
+            <td style="border:none; background:none"></td>
+            {% endfor %}
+        </tr>
+        {% for i,j in subjectName %}
+        {% if (j%3==0) %}
+        <tr onmouseover="changeRowColor(this)"
+            onmouseout="changeBackRowColor(this)">
+            {% endif %}
+            <td>{{i}}</td>
+            <td>{{subjects[i]}}</td>
+            <td style="border:none; background:none" id="deleteContainer"><button
+                    onclick="deleteItem(this, 2)" value="{{i}}">Xoá</button></td>
+            {% if (j%3==2) %}
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </table>
+
+
+    {% elif id == 3 %}
+    <h1>Phòng</h1>
+    <table id="talbe">
+        <tr>
+            <th>Phòng</th>
+            <td style="border:none; background:none"></td>
+        </tr>
+        {% for i in rooms %}
+        <tr onmouseover="changeRowColor(this)"
+            onmouseout="changeBackRowColor(this)">
+            <td>{{i}}</td>
+            <td style="border:none; background:none" id="deleteContainer"><button
+                    onclick="deleteItem(this, 3)" value="{{i}}">Xoá</button></td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    <div class="modal fade" id="myModal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close"
+                        data-dismiss="modal">&times;</button>
+                    {% if id == 1 %}
+                    <h4 class="modal-title">Thêm giảng viên</h4>
+                    {% elif id == 2 %}
+                    <h4 class="modal-title">Thêm môn học</h4>
+                    {% elif id == 3 %}
+                    <h4 class="modal-title">Thêm phòng</h4>
+                    {% endif %}
+                </div>
+                <div class="modal-body">
+
+                    <form action="/addData" id="subs" method="POST">
+                        {% if id == 1 %}
+                        <table id="input">
+                                <tr><td></td><td></td></tr>
+                                <tr>
+                                    <td><label for="teacherName">Tên giảng viên</label></td>
+                                    <td><input type="text" id="teacherName"
+                                            name="teacherName"></td>
+                                </tr>
+                                <tr>
+                                    <td><label for="subs">Môn học</label></td>
+                                    <td><div id="checkSub">
+                                            {% for i in subjects %}
+                                            <input type="checkbox"
+                                                name="subs[]" value="{{i}}">
+                                            <label for="subs">{{i}}</label><br>
+                                            {% endfor %}
+                                        </div></td>
+                                </tr>
+                                <tr>
+                                    <td><label for="teacherName">Số ca tối thiểu</label></td>
+                                    <td><input type="number" id="minShift"
+                                            name="minShift"></td>
+                                </tr>
+                                <tr>
+                                    <td><label for="teacherName">Tên giảng viên</label></td>
+                                    <td><input type="number" id="maxShift"
+                                            name="maxShift"></td>
+                                </tr>
+                            </table>
+                        {% elif id == 2 %}
+                        <table id="input">
+                                <tr><td></td><td></td></tr>
+                                <tr>
+                                    <td><label for="subName">Tên môn học</label></td>
+                                    <td><input type="text" id="subName"
+                                            name="subName"></td>
+                                </tr>
+                                <tr>
+                                    <td><label for="noGroup">Số nhóm</label></td>
+                                    <td><input type="number" id="noGroup"
+                                            name="noGroup"></td>
+                                </tr>
+                            </table>
+    
+                        {% elif id == 3 %}
+                        <table id="input">
+                                <tr><td></td><td></td></tr>
+                                <tr>
+                                    <td><label for="roomName">Tên phòng</label></td>
+                                    <td><input type="text" id="roomName"
+                                            name="roomName"></td>
+                                </tr>
+                            </table>
+                        {% endif %}
+                        
+
+                        <input type="hidden" name="id" value="{{id}}">
+                        <input type="submit" value="Submit">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+

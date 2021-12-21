@@ -1,0 +1,208 @@
+{% block head %}
+<meta charset="utf-8">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<style>
+
+.container {
+    padding: 100px;
+}
+table{
+    border: 1px solid;
+    width: 100%;
+}
+#header th{
+    text-align: center;
+    padding: 10px;
+    background-color: rgb(81, 191, 255);
+}
+a {
+    padding: 20px 25px 20px 25px ;
+    border-radius: 5px;
+    margin: 10px;
+    text-decoration: none;
+    font-size: 22px;
+    height: 100%;
+    color: rgb(0, 0, 0);
+    background-color: #51BFFF;
+    font-weight: bold;
+    text-align: center;
+}
+#select {
+    padding: 20px 25px 20px 25px ;
+    border: 2px solid #58D9FF;
+    border-radius: 5px;
+    text-decoration: none;
+    margin: 10px;
+    font-size: 22px;
+    font-weight: bold;
+    display: inline-block;
+    text-align: center;
+}
+#generateSchedule{
+    display: inline-block;
+    column-count: 1;
+}
+.se-pre-con {
+    position: absolute;
+    margin-left: 50%;
+    margin-right: 50%;
+    height: 100px;
+    width: 100px;
+    display: none;
+	background: url(https://smallenvelop.com/wp-content/uploads/2014/08/Preloader_11.gif) no-repeat transparent;
+}
+#input-generate{
+    position: relative;
+    top: -20px;
+}
+#input-generate div{
+    border: 2px solid #58D9FF;
+    border-radius: 5px;
+    display: inline-block;
+    margin: 5px;
+    padding: 5px;
+}
+</style>
+<script>
+    $(document).ready(function(){
+        $("#btn-generate").click(function(){
+                $(".se-pre-con").fadeIn(300)
+        })
+    })
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="se-pre-con"></div>
+<div class="container">
+        <form id="generateSchedule" action="/generateSchedule" method="post">
+            <div id="input-generate">
+                <div>
+                    <label for="population" name="population">population:</label>
+                    <input style="width:50px; margin:5px;" type="number" id="population" name="population" value="{{attributes['population']}}">
+                </div>
+                <div>
+                    <label for="fitness" name="fitness">fitness:</label>
+                    <input style="width:50px; margin:5px;" type="text" id="fitness" name="fitness" value="{{attributes['fitness']}}">
+                </div>
+                </br>
+                <div>
+                    <label for="mutation_rate" name="mutation_rate">muation rate:</label>
+                    <input style="width:50px; margin:5px;" type="text" id="mutation_rate" name="mutation_rate" value="{{attributes['mutation_rate']}}">
+                </div>
+                <div>
+                    <label for="maxGen" name="maxGen">max generation:</label>
+                    <input style="width:50px; margin:5px;" type="number" id="maxGen" name="maxGen" value="{{attributes['maxGen']}}">
+                </div>
+                </div>
+            <a id="btn-generate" href="javascript:{}" onclick="document.getElementById('generateSchedule').submit();" class=""style="background-color: #DC6965" id="load">Genetic Algorithm tạo thời khoá biểu</a>
+        </form>
+<div class="top">
+    <a href="/">Tạo mới</a>
+    
+    
+    <form id="select" action="/getTeacher" method="POST">
+        <label for="teacher">Chọn giảng viên:</label>
+        <select name="teacher" id="teacher" onchange="this.form.submit()">
+            {% for i in range(teachers|length) %}
+            {% if i == teacherIsSelected %}
+            <option value="{{i}}" selected="selected">{{teachers[i]}}</option>
+            {% else %}
+            <option value="{{i}}">{{teachers[i]}}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+    </form>
+    {% if generation > 1 %}
+    <form id="select" action="/getGen" method="GET">
+        <label for="generation">Chọn thế hệ:</label>
+        <select name="generation" id="generation" onchange="this.form.submit()">
+            {% for i in range(generation) %}
+            {% if (generation-i) == genIsSelected %}
+            <option value="{{generation-i}}" selected="selected">Gen {{generation-i}}</option>
+            {% else %}
+            <option value="{{generation-i}}">Gen {{generation-i}}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+    </form>
+    {% endif %}
+    <a href="/getGeneral">Tổng quát</a>
+    <a href="/data?route=teacher">Sửa dữ kiện</a>
+</div>
+
+{% if id == 1 %}
+<h1 style="text-align: center;">Thời khoá biểu tổng quát</h1>
+{% else %}
+<h1 style="text-align: center;">{{teachers[teacherIsSelected]}}</h1>
+{% endif %}
+
+<table>
+    <tr id="header">
+        <th></th>
+        <th>Thứ hai</th>
+        <th>Thứ ba</th>
+        <th>Thứ tư</th>
+        <th>Thứ năm</th>
+        <th>Thứ sáu</th>
+        <th>Thứ bảy</th>
+        <th>Chủ nhật</th>
+    </tr>
+    {% for i in range(4) %}
+    <tr>
+        {% if i%2==0 %}
+        <td style="width:50px; background-color: rgb(169, 228, 238);">Ca {{ i+1 }}</td>
+        {% else %}
+        <td style="width:50px; background-color: rgb(131, 218, 233);">Ca {{ i+1 }}</td>
+        {% endif %}
+        {% for j in range(6) %}
+        {% if i%2==0 %}
+        <td style="background-color: rgb(169, 228, 238);">
+        {% else %}
+        <td style="background-color: rgb(131, 218, 233);">
+        {% endif %}
+            {% if data[i][j] != [] %}
+            <hr/>
+            {% endif %}
+            
+            {% if id == 1 %}
+            {% for sche in data[i][j] %}
+            {% if sche[4]==True %}
+            <div style="padding: 10px; background-color: #F3CCCA" >
+            {% else %}
+            <div style="padding: 10px;" >
+            {% endif %}
+            <p><b><i>{{ sche[0] }}</i></b></p>
+            <p>{{ sche[1] }}</p>
+            <p>Nhóm {{ sche[2] }}</p>
+            <p>{{ sche[3] }}</p>
+            </div>
+            <hr/>
+            {% endfor %}
+            
+            {% else %}
+            {% for sche in data[i][j] %}
+            {% if sche[4]==True %}
+            <div style="padding: 10px; background-color: #F3CCCA" >
+            {% else %}
+            <div style="padding: 10px;" >
+            {% endif %}
+            <p><b><i>{{ sche[1] }}</i></b></p>
+            <p>Nhóm {{ sche[2] }}</p>
+            <p>{{ sche[3] }}</p>
+            </div>
+            <hr/>
+            {% endfor %} 
+            {% endif %}   
+        </td>
+        {% endfor %}
+        {% if i%2==0 %}
+        <td style="background-color: rgb(169, 228, 238);"></td>
+        {% else %}
+        <td style="background-color: rgb(131, 218, 233);"></td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+</table>
+</div>
+{% endblock %}
